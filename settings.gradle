@@ -1,0 +1,35 @@
+pluginManagement {
+    repositories {
+        gradlePluginPortal()
+        mavenLocal()
+/*
+        maven {
+            url NEXUS_MAVEN_PUBLIC_URL
+            setAllowInsecureProtocol(true)
+            credentials {
+                username NEXUS_USERNAME
+                password NEXUS_PASSWORD
+            }
+        }
+*/
+    }
+}
+dependencyResolutionManagement {
+    repositories {
+        mavenCentral()
+        maven { url "https://maven.egovframe.go.kr/maven/" }
+        mavenLocal()
+/*
+        maven {
+            url NEXUS_MAVEN_PUBLIC_URL
+            setAllowInsecureProtocol(true)
+            credentials {
+                username NEXUS_USERNAME
+                password NEXUS_PASSWORD
+            }
+        }
+*/
+    }
+}
+
+rootProject.name = 's3storage-sample'

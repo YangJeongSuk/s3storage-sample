@@ -1,0 +1,50 @@
+spring:
+  # 추적 서비스 (로컬)
+  sleuth:
+    otel:
+      exporter:
+        otlp:
+          enabled: false
+    enabled: false
+
+  servlet:
+    multipart:
+      location: /DATA/msa-attach-volume
+      max-file-size: 100MB
+      max-request-size: 100MB
+
+logging:
+  config: classpath:config/log/logback-spring.xml
+  file:
+    path: /data01/log
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health, info, refresh, busrefresh
+
+auth:
+  token-secret: UjK8zdetbLmv2ONiR5qqU4pZkko6uoLaXgEMvSXi8/A= #32byte 이상 (head -c 32 /dev/urandom | base64)
+
+mybatis:
+  mapper-locations:
+    - classpath*:mapper/**/**_SQL.xml
+  config-location: classpath:mapper/config/mapper-config.xml
+
+health:
+  message: hello-${spring.profiles.active} #application.yml
+
+jasypt:
+  encryptor:
+    bean: jasyptEncryptorAES
+
+###############
+# S3 업로드 정보
+s3:
+  access-key: "e537129c9e59b8286f1b"
+  secret-key: "9ababac2190f3a90dfcdd9c5"
+  endpoint: "https://obj1.gkr-west-2.samsungsdscloud.com:8443"
+  region: "US_WEST_2"  # 사용하지 않지만 없으면 오류나므로 아무거나 입력
+  bucket: "haiobjstrg"
+  presigned-time: 10 # 10분
