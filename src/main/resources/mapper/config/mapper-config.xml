@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE configuration PUBLIC "-//mybatis.org//DTD Config 3.0//EN" "http://mybatis.org/dtd/mybatis-3-config.dtd">
+
+<configuration>
+	<settings>
+		<!-- 컬럼명을 카멜 표기법으로 변환하여 리턴 -->
+		<setting name="mapUnderscoreToCamelCase" value="true"/>
+		
+		<!-- parameter에 NULL이 있는 경우 처리 -->
+		<setting name="jdbcTypeForNull" value="VARCHAR"/>
+		
+		<!-- 리턴값이 NULL인 경우 처리 -->
+		<setting name="callSettersOnNulls" value="true"/>
+		
+		<setting name="defaultFetchSize" value="1000"/>
+		
+		<setting name="cacheEnabled" value="true"/>
+		
+		<setting name="useColumnLabel" value="true"/>
+	</settings>
+
+</configuration>

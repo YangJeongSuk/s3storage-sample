@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+
+    <springProperty scope="context" name="app_name" source="spring.application.name" defaultValue="application"/>
+    <springProperty scope="context" name="enable_file_log" source="log.file.enable" defaultValue="false"/>
+
+    <property name="PATTERN_FIXED" value="%-130(%d{yyyy-MM-dd HH:mm:ss.SSS} %-5level [%-17thread] %logger{60}:%method:%line) - %msg%n" />
+    <property name="log_path" value="${LOG_PATH}" />
+
+    <!-- STDOUT Appender (콘솔) -->
+    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>${PATTERN_FIXED}</pattern>
+        </encoder>
+    </appender>
+
+    <!-- JSON Console Appender (플루언트디 수집) -->
+    <appender name="JSON_CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder class="net.logstash.logback.encoder.LoggingEventCompositeJsonEncoder">
+            <providers>
+                <timestamp>
+                    <fieldName>timestamp</fieldName>
+                    <pattern>yyyy-MM-dd HH:mm:ss.SSS</pattern>
+                    <timeZone>Asia/Seoul</timeZone>
+                </timestamp>
+                <logLevel />
+                <loggerName />
+                <threadName />
+                <pattern>
+                    <pattern>
+                        {
+                        "method": "%method",
+                        "line": "%line"
+                        }
+                    </pattern>
+                </pattern>
+                <message />
+                <mdc />
+                <stackTrace />
+            </providers>
+        </encoder>
+    </appender>
+
+    <!-- Rolling File Appender (파일) -->
+    <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${log_path:-/data01/log}/${app_name}/${app_name}.log</file>
+        <encoder>
+            <pattern>${PATTERN_FIXED}</pattern>
+        </encoder>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${log_path:-/data01/log}/${app_name}/${app_name}-%d{yyyy-MM-dd}.%i.log</fileNamePattern>
+            <maxHistory>5</maxHistory>
+            <timeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
+                <maxFileSize>20MB</maxFileSize>
+            </timeBasedFileNamingAndTriggeringPolicy>
+        </rollingPolicy>
+    </appender>
+
+    <!-- 프로필에 따른 로그 생성 -->
+    <springProfile name="local,default">
+        <root level="DEBUG">
+            <appender-ref ref="STDOUT" />
+        </root>
+    </springProfile>
+    <springProfile name="dev">
+        <root level="INFO">
+            <appender-ref ref="JSON_CONSOLE" />
+            <appender-ref ref="FILE" />
+        </root>
+    </springProfile>
+    <springProfile name="ops">
+        <root level="INFO">
+            <appender-ref ref="JSON_CONSOLE" />
+        </root>
+    </springProfile>
+
+</configuration>
