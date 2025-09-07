@@ -1,5 +1,6 @@
 package kr.go.hai.s3storage.controller;
 
+import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletResponse;
 import kr.go.hai.s3storage.service.S3Service;
@@ -43,6 +44,7 @@ public class S3Controller {
 	 * @throws ApiBizException API 예외 처리
 	 */
 	@PostMapping(value = "/v1/s3storage/upload", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+	@Operation(summary = "파일 업로드", description = "스토리지에 파일 업로드")
 	public ApiResponseVO uploadObject(@RequestPart("file") MultipartFile file,
 									  @RequestParam String instCd) throws ApiBizException {
 		log.debug("uploadObject");
@@ -55,6 +57,7 @@ public class S3Controller {
 	 * @throws ApiBizException 예외처리
 	 */
 	@GetMapping("/v1/s3storage/download")
+	@Operation(summary = "파일 다운로드", description = "스토리지에서 파일 다운로드")
 	public void downloadObject(HttpServletResponse response, @RequestParam String fileKey) throws ApiBizException {
 		log.debug("downloadObject");
 		s3Service.downloadObject(response, fileKey);
@@ -67,6 +70,7 @@ public class S3Controller {
 	 * @throws ApiBizException 예외 처리
 	 */
 	@PostMapping("/v1/s3storage/presigned")
+	@Operation(summary = "임시 URL 생성", description = "파일을 다운로드하기 위한 임시 URL 생성")
 	public ApiResponseVO getPresignedUrl(@RequestParam String fileKey) throws ApiBizException {
 		log.debug("getPresignedUrl");
 		return ResponseUtils.build(s3Service.getPresignedUrl(fileKey));
@@ -79,6 +83,7 @@ public class S3Controller {
 	 * @throws ApiBizException 예외 처리
 	 */
 	@GetMapping("/v1/s3storage/download-zip")
+	@Operation(summary = "ZIP 다운로드", description = "ZIP 다운로드")
 	public void downloadZip(HttpServletResponse response, @RequestParam String[] fileKeyList) throws ApiBizException {
 		log.debug("downloadObject");
 		s3Service.downloadZip(response, fileKeyList);
@@ -91,6 +96,7 @@ public class S3Controller {
 	 * @throws ApiBizException 예외 처리
 	 */
 	@PostMapping("/v1/s3storage/delete")
+	@Operation(summary = "파일 삭제", description = "스토리지에 저장된 파일 삭제")
 	public ApiResponseVO deleteObject(@RequestParam String fileKey) throws ApiBizException {
 		log.info("deleteObject");
 		s3Service.deleteObject(fileKey);
@@ -105,6 +111,7 @@ public class S3Controller {
 	 * @throws ApiBizException 예외 처리
 	 */
 	@PostMapping("/v1/s3storage/info")
+	@Operation(summary = "파일 조회", description = "파일 정보 조회")
 	public ApiResponseVO viewObject(@RequestParam String fileKey) throws ApiBizException {
 		log.info("viewObject");
 		return ResponseUtils.build(s3Service.viewObject(fileKey));
@@ -118,6 +125,7 @@ public class S3Controller {
 	 * @throws ApiBizException 예외 처리
 	 */
 	@PostMapping("/v1/s3storage/list")
+	@Operation(summary = "파일 목록 조회", description = "저장된 파일 목록 조회")
 	public ApiResponseVO listObject(@RequestParam(required = false) String instCd,
 									@RequestParam(required = false) String dateString) throws ApiBizException {
 		log.debug("listObject");
