@@ -5,11 +5,6 @@ spring:
       on-profile:
       - jenkins-junit
 
-  redis:
-    host: ENC(Gd8+iDSgwQJEXwWI+5C3TUYldUzYLB49wJ1vE0Ae1Dm3Jo48E/kU9UhFMwGxZBPmcRVGVW8uniOViRDcpN6oOVpTbGa/6hfmUp9dd98SOY4=)
-    port: 6379
-    password: ENC(Xs6uYQ8v6cCS1B0UEXYyNUSUcjQdvagy+XwI36+AktPY4mwkQKTUu/DTxgEoZrFQ)
-
 junit-datasource: ENC(uFXj3dEhIhIUwDy/txxseN3Rnpw8d5xKylAcL0y+kUzhioPACKJDxl+ungR28Xy2XPTo6mk6miOYRBTPaklF8+DlhMjQBZduW3GLXU7OOIE=)
 ---
 #H2 테스트용

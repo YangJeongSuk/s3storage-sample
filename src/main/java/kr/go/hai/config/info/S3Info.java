@@ -43,4 +43,7 @@ public class S3Info {
 
     @Schema(description = "Presigned Url expiration time")
     private int presignedTime;
+
+    @Schema(description = "S3 Object List Page Size")
+    private int pageSize;
 }

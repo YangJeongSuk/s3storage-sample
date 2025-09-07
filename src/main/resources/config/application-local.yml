@@ -48,3 +48,4 @@ s3:
   region: "US_WEST_2"  # 사용하지 않지만 없으면 오류나므로 아무거나 입력
   bucket: "haiobjstrg"
   presigned-time: 10 # 10분
+  page-size: 100
