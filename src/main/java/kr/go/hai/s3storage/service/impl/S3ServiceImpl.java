@@ -11,6 +11,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StreamUtils;
 import org.springframework.web.multipart.MultipartFile;
@@ -31,6 +32,8 @@ import java.time.Duration;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 /**
  * S3 Storage Service implement
@@ -89,16 +92,13 @@ public class S3ServiceImpl implements S3Service {
     @Override
     public void downloadObject(HttpServletResponse response, String fileKey) throws ApiBizException {
         try (ResponseInputStream<GetObjectResponse> s3InputStream = s3Client.getObject(
-                GetObjectRequest.builder().bucket(s3Info.getBucket()).key(fileKey).build())
-        ) {
+                GetObjectRequest.builder().bucket(s3Info.getBucket()).key(fileKey).build()
+        )) {
             // 파일명 추출
             String filename = Paths.get(fileKey).getFileName().toString();
 
             // HTTP 헤더 설정
-            response.setContentType(s3InputStream.response().contentType());
-            response.setHeader(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + URLEncoder.encode(filename, StandardCharsets.UTF_8).replaceAll("\\+", "%20") + "\";");
-            response.setHeader(HttpHeaders.CONTENT_LENGTH, String.valueOf(s3InputStream.response().contentLength()));
-            response.addHeader(HttpHeaders.ACCESS_CONTROL_EXPOSE_HEADERS, HttpHeaders.CONTENT_DISPOSITION);
+            this.setResponse(response, filename, s3InputStream.response().contentType(), s3InputStream.response().contentLength());
 
             // 스트리밍 전송
             StreamUtils.copy(s3InputStream, response.getOutputStream());
@@ -135,6 +135,50 @@ public class S3ServiceImpl implements S3Service {
         } catch (S3Exception | IllegalArgumentException e) {
             log.error("Presigned URL 발급 실패", e);
             throw new ApiBizException(HttpStatus.INTERNAL_SERVER_ERROR, "URL 발급 실패");
+        }
+    }
+
+    /**
+     * 스토리지에서 여러 파일을 zip으로 다운로드
+     * @param response http 응답 객체
+     * @param fileKeyList 파일 식별자 목록
+     * @throws ApiBizException 예외 처리
+     */
+    @Override
+    public void downloadZip(HttpServletResponse response, String[] fileKeyList) throws ApiBizException {
+        if(fileKeyList == null) {
+            return;
+        }
+
+        // 다운 파일명
+        String zipName = LocalDate.now() + ".zip";
+
+        // HTTP 헤더 설정
+        this.setResponse(response, zipName, "application/zip", null);
+
+        try(ZipOutputStream zos = new ZipOutputStream(response.getOutputStream())) {
+            for(String fileKey:fileKeyList) {
+                try (ResponseInputStream<GetObjectResponse> s3InputStream = s3Client.getObject(
+                        GetObjectRequest.builder().bucket(s3Info.getBucket()).key(fileKey).build()
+                )) {
+                    // 파일명 추출
+                    String filename = Paths.get(fileKey).getFileName().toString();
+
+                    // ZIPentry(압축될 파일명)
+                    ZipEntry zipEntry = new ZipEntry(filename);
+                    zos.putNextEntry(zipEntry);
+
+                    // 파일 데이터 쓰기
+                    StreamUtils.copy(s3InputStream, zos);
+                    zos.closeEntry();
+
+                } catch (S3Exception | IOException e) {
+                    log.error("파일 다운로드 중 오류 발생", e);
+                    throw new ApiBizException(HttpStatus.INTERNAL_SERVER_ERROR, "파일 다운로드 실패");
+                }
+            }
+        } catch (IOException e) {
+            throw new ApiBizException(HttpStatus.INTERNAL_SERVER_ERROR, "ZIP 파일을 생성할 수 없습니다.");
         }
     }
 
@@ -238,7 +282,7 @@ public class S3ServiceImpl implements S3Service {
 
     /**
      * 스토리지에 저장할 파일 키 생성
-     * 생성규칙 : 기관코드(7) + "/" + 연도(4) + "/" + 월(2) + "/" + 일(2) + "/" + UUID(36) + "/" + 원본파일명(확장자 포함, 900byte 제한)
+     * 생성규칙 : 기관코드(7) + "/" + 연도(4) + "/" + 월(2) + "/" + 일(2) + "/" + UUID(32) + "/" + 원본파일명(확장자 포함, 900byte 제한)
      * @param instCd 기관코드
      * @param originalFilename 원본파일명
      * @return 파일 저장키
@@ -288,6 +332,23 @@ public class S3ServiceImpl implements S3Service {
             }
         }
         return prefix.toString();
+    }
+
+    /**
+     * Response 세팅
+     * @param response http 응답
+     * @param filename 저장할 파일명
+     * @param contentType 파일 유형
+     * @param fileSize 파일 크기
+     */
+    private void setResponse(HttpServletResponse response, String filename, String contentType, Long fileSize) {
+        if(fileSize != null && fileSize != 0) {
+            response.setContentLengthLong(fileSize);
+        }
+
+        response.setContentType(contentType != null ? contentType : MediaType.APPLICATION_OCTET_STREAM_VALUE);
+        response.setHeader(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + URLEncoder.encode(filename, StandardCharsets.UTF_8).replaceAll("\\+", "%20") + "\";");
+        response.addHeader(HttpHeaders.ACCESS_CONTROL_EXPOSE_HEADERS, HttpHeaders.CONTENT_DISPOSITION);
     }
 
     @Override

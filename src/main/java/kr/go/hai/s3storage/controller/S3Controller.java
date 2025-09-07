@@ -73,6 +73,18 @@ public class S3Controller {
 	}
 
 	/**
+	 * 스토리지에서 여러 파일을 zip으로 다운로드
+	 * @param response http 응답 객체
+	 * @param fileKeyList 파일 식별자 목록
+	 * @throws ApiBizException 예외 처리
+	 */
+	@GetMapping("/v1/s3storage/download-zip")
+	public void downloadZip(HttpServletResponse response, @RequestParam String[] fileKeyList) throws ApiBizException {
+		log.debug("downloadObject");
+		s3Service.downloadZip(response, fileKeyList);
+	}
+
+	/**
 	 * 스토리지에 저장된 파일 삭제
 	 * @param fileKey 삭제 대상 파일키
 	 * @return 삭제 결과
@@ -112,7 +124,7 @@ public class S3Controller {
 		return ResponseUtils.build(s3Service.listObject(instCd, dateString));
 	}
 
-	@PostMapping("/v1/s3storage/test-mapper")
+	//@PostMapping("/v1/s3storage/test-mapper")
 	public ApiResponseVO testMapper() throws ApiBizException {
 		return ResponseUtils.build(s3Service.testMapper(new S3VO()));
 	}

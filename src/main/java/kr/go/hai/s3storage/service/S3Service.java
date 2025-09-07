@@ -49,6 +49,14 @@ public interface S3Service {
     String getPresignedUrl(String fileKey) throws ApiBizException;
 
     /**
+     * 스토리지에서 여러 파일을 zip으로 다운로드
+     * @param response http 응답 객체
+     * @param fileKeyList 파일 식별자 목록
+     * @throws ApiBizException 예외 처리
+     */
+    void downloadZip(HttpServletResponse response, String[] fileKeyList) throws ApiBizException;
+
+    /**
      * 스토리지에 저장된 파일 삭제
      * @param fileKey 삭제 대상 파일키
      * @throws ApiBizException 예외 처리
@@ -73,4 +81,5 @@ public interface S3Service {
     List<S3VO> listObject(String instCd, String dateString) throws ApiBizException;
 
     S3VO testMapper(S3VO vo);
+
 }
