@@ -53,7 +53,7 @@ public class S3StorageConfig {
 
     /**
      * 다른 경로에서 S3 파일 업로드/다운로드를 위한 서명된 URL 생성 Bean 등록
-     * @return S3Presiginer
+     * @return S3Presigner
      */
     @Bean(destroyMethod = "close")
     public S3Presigner s3Presigner() {
